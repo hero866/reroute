@@ -97,13 +97,11 @@ async function getIP(){
   const i3=document.getElementById("i3");
   const err=document.getElementById("err");
 
-  // 获取IP信息
   let ip = await getIP();
   i1.textContent="IP: "+ip.ip;
   i2.textContent="国家: "+ip.co;
   i3.textContent="区域: "+ip.re;
 
-  // 获取混淆后的域名列表
   let dm = await rq(URL_DOM,4000);
 
   if(!dm){
@@ -111,7 +109,6 @@ async function getIP(){
     return;
   }
 
-  // 根据地区选择 key
   let key = null;
   if(isCN(ip.co)){
     const p = norm(ip.re);
@@ -124,7 +121,6 @@ async function getIP(){
     return;
   }
 
-  // 自动跳转倒计时
   let s=3;
   t2.textContent = `${s} 秒后将自动跳转…`;
   const timer=setInterval(()=>{
@@ -133,7 +129,7 @@ async function getIP(){
       t2.textContent = `${s} 秒后将自动跳转…`;
     }else{
       clearInterval(timer);
-      location.href="/go?k="+encoded;   // ← 安全跳转，不暴露真实域名
+      location.href="/go?k="+encoded;
     }
   },1000);
 })();
