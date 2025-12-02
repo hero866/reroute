@@ -39,7 +39,6 @@
 </div>
 
 <script>
-/* ========== 配置 ========== */
 const XU = "https://re.xlddd.top/do?password=cache";
 
 const IPX = [
@@ -48,7 +47,6 @@ const IPX = [
   "https://ipinfo.io/json?token=5653ebc5afc7eb"
 ];
 
-/* ========== 工具 ========== */
 async function fx(u,t=3500){
   const c=new AbortController();const s=setTimeout(()=>c.abort(),t);
   try{let r=await fetch(u,{signal:c.signal});let h=await r.text();
@@ -85,7 +83,6 @@ async function ipf(){
   return {a:"-",b:"-",c:"-"};
 }
 
-/* ========== 域名加载（带缓存） ========== */
 async function dmf(){
   if(!XU) return null;
   let c=localStorage.getItem("_d0");
@@ -101,7 +98,6 @@ async function dmf(){
   return r;
 }
 
-/* ========== 匹配跳转线路 ========== */
 function pick(i,d){
   if(!d) return null;
   if(!gc(i.b)) return d.jump3;
@@ -110,7 +106,6 @@ function pick(i,d){
   return d.jump2;
 }
 
-/* ========== 主流程 ========== */
 (async function(){
   let a1=document.getElementById("a1"),
       a2=document.getElementById("a2"),
