@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>智能导航</title>
+
+<style>
+body{
+    margin:0;height:100vh;display:flex;justify-content:center;align-items:center;
+    background:#06080d;color:#eafaff;font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+}
+.box{
+    width:92%;max-width:420px;padding:32px 26px;border-radius:18px;text-align:center;
+    background:rgba(255,255,255,0.06);backdrop-filter:blur(16px);
+    border:1px solid rgba(255,255,255,0.1);
+}
+h2{margin:0;font-size:20px;}
+.msg{font-size:14px;color:#b8e6f5;margin:10px 0 18px;white-space:pre-line;}
+.load{
+    width:42px;height:42px;margin:14px auto;border-radius:50%;
+    border:3px solid rgba(0,255,255,0.15);border-top-color:#00f0ff;
+    animation:spin 1s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.badge{
+    display:inline-block;padding:6px 12px;margin:4px;border-radius:99px;
+    border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.06);
+    font-size:12px;
+}
+.err{margin-top:14px;color:#ff9e9e;font-size:13px;display:none;}
+</style>
+</head>
+
+<body>
+<div class="box">
+  <h2 id="t1">正在处理中…</h2>
+  <div class="msg" id="t2">正在为您搜集信息</div>
+  <div class="load"></div>
+
+  <div class="badge" id="i1">IP: -</div>
+  <div class="badge" id="i2">国家: -</div>
+  <div class="badge" id="i3">区域: -</div>
+
+  <div id="err" class="err"></div>
+</div>
+
+<script>
+const URL_DOM = "/do?pwd=cache";
+const IP_APIS = [
+  "https://api.ip.sb/geoip",
+  "https://ipapi.co/json/",
+  "https://ipinfo.io/json?token=5653ebc5afc7eb"
+];
+
+async function rq(u, t=3500){
+  const ctrl=new AbortController();
+  const id=setTimeout(()=>ctrl.abort(),t);
+  try{
+    let r=await fetch(u,{signal:ctrl.signal});
+    let h=await r.text();
+    try{return JSON.parse(h);}catch{return r.json();}
+  }catch{return null}finally{clearTimeout(id);}
+}
+
+function isCN(c){
+  if(!c) return false;
+  c=String(c).toLowerCase();
+  return ["cn","china","中国","chn"].includes(c);
+}
+function norm(r){
+  if(!r) return "";
+  let x=String(r).toLowerCase().replace(/省|市|自治区|特别行政区|province|region|state/gi,"").trim();
+  const m={"jiangsu":"江苏","江苏":"江苏","zhejiang":"浙江","浙江":"浙江","fujian":"福建","福建":"福建"};
+  if(m[x]) return m[x];
+  for(const k in m){ if(x.includes(k)) return m[k]; }
+  return x;
+}
+
+async function getIP(){
+  for(const api of IP_APIS){
+    let d=await rq(api,3200);
+    if(!d) continue;
+    return {
+      ip:d.ip||d.ip_address||d.data?.ip||"-",
+      co:d.country||d.country_name||d.data?.country||"",
+      re:d.region||d.regionName||d.province||d.data?.region||""
+    };
+  }
+  return {ip:"-",co:"-",re:"-"};
+}
+
+(async()=>{
+  const t2=document.getElementById("t2");
+  const i1=document.getElementById("i1");
+  const i2=document.getElementById("i2");
+  const i3=document.getElementById("i3");
+  const err=document.getElementById("err");
+
+  let ip = await getIP();
+  i1.textContent="IP: "+ip.ip;
+  i2.textContent="国家: "+ip.co;
+  i3.textContent="区域: "+ip.re;
+
+  let dm = await rq(URL_DOM,4000);
+
+  if(!dm){
+    err.style.display="block"; err.textContent="无法获取配置";
+    return;
+  }
+
+  let key = null;
+  if (isCN(ip.co)) {
+    const p = norm(ip.re);
+
+    if (["江苏","浙江","福建"].includes(p)) {
+      key = "j1";
+    } else {
+      key = Math.random() < 0.5 ? "j1" : "j2";
+    }
+  } else {
+    key = "j3";
+  }
+
+  const encoded = dm[key];
+  if(!encoded){
+    err.style.display="block"; err.textContent="无法匹配线路";
+    return;
+  }
+
+  let s=3;
+  t2.textContent = `${s} 秒后将自动跳转…`;
+  const timer=setInterval(()=>{
+    s--;
+    if(s>0){
+      t2.textContent = `${s} 秒后将自动跳转…`;
+    }else{
+      clearInterval(timer);
+      location.href="/go?k="+encoded;
+    }
+  },1000);
+})();
+</script>
+
+</body>
+</html>
