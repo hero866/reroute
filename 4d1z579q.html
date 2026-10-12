@@ -169,7 +169,7 @@ async function getIP() {
     
     const ip = await getIP();
     i1.textContent = "IP: " + ip.ip;
-    i2.textContent = ": " + ip.co + " " + ip.re;
+    i2.textContent = "位置: " + ip.co + " " + ip.re;
     const dm = await rq(URL_DOM, 4000);
     if (!dm) {
         err.style.display = "block";
