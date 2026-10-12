@@ -75,8 +75,7 @@ h2{
     </div>
     <div class="load"></div>
     <div class="badge" id="i1">IP: -</div>
-    <div class="badge" id="i2">国家: -</div>
-    <div class="badge" id="i3">区域: -</div>
+    <div class="badge" id="i2">位置: -</div>
     <div id="err" class="err"></div>
 </div>
 <script>
@@ -166,13 +165,11 @@ async function getIP() {
     const t2 = document.getElementById("t2");
     const i1 = document.getElementById("i1");
     const i2 = document.getElementById("i2");
-    const i3 = document.getElementById("i3");
     const err = document.getElementById("err");
     
     const ip = await getIP();
     i1.textContent = "IP: " + ip.ip;
-    i2.textContent = "国家: " + ip.co;
-    i3.textContent = "区域: " + ip.re;
+    i2.textContent = "位置: " + ip.co + " " + ip.re;
     const dm = await rq(URL_DOM, 4000);
     if (!dm) {
         err.style.display = "block";
